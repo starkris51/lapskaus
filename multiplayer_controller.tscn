@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bs41dwj6yqsp7"]
 
 [ext_resource type="Script" uid="uid://cyhfhuq1lp3om" path="res://ServerBrowser.cs" id="1_1jf6k"]
-[ext_resource type="Script" path="res://MultiplayerController.cs" id="1_ewyxk"]
+[ext_resource type="Script" uid="uid://gjlqeb6k45gl" path="res://MultiplayerController.cs" id="1_ewyxk"]
 [ext_resource type="PackedScene" uid="uid://covgs3b4wcgco" path="res://server_info.tscn" id="1_ulert"]
 
 [node name="Multiplayer Controller" type="Control"]
@@ -129,3 +129,4 @@ text = "Host
 "
 
 [connection signal="timeout" from="ServerBrowser/BroadcastTimer" to="ServerBrowser" method="_on_broadcast_timer_timeout"]
+[connection signal="button_down" from="Control/Panel/VBoxContainer/Host" to="." method="_on_host_button_down"]
