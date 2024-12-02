@@ -1,19 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://bs41dwj6yqsp7"]
+[gd_scene load_steps=4 format=3 uid="uid://bs41dwj6yqsp7"]
 
 [ext_resource type="Script" uid="uid://cyhfhuq1lp3om" path="res://ServerBrowser.cs" id="1_1jf6k"]
+[ext_resource type="Script" path="res://MultiplayerController.cs" id="1_ewyxk"]
 [ext_resource type="PackedScene" uid="uid://covgs3b4wcgco" path="res://server_info.tscn" id="1_ulert"]
 
 [node name="Multiplayer Controller" type="Control"]
 layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_top = -15.5
-offset_bottom = 15.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 4
+script = ExtResource("1_ewyxk")
 
 [node name="ServerBrowser" type="Control" parent="."]
 layout_mode = 1
@@ -96,3 +95,37 @@ size_flags_vertical = 5
 text = "Da Join Buttøn"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="Control"]
+layout_mode = 0
+offset_top = -50.0
+offset_right = 251.0
+offset_bottom = 90.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextEdit" type="TextEdit" parent="Control/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Host" type="Button" parent="Control/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Host
+"
+
+[connection signal="timeout" from="ServerBrowser/BroadcastTimer" to="ServerBrowser" method="_on_broadcast_timer_timeout"]
