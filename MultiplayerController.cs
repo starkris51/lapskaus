@@ -11,7 +11,7 @@ public partial class MultiplayerController : Control
     {
     }
 
-    private void hostGame()
+    private void HostGame()
     {
         ENetMultiplayerPeer peer = new();
         var error = peer.CreateServer(port, 24);
