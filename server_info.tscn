@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://covgs3b4wcgco"]
+
+[node name="ServerInfo" type="HBoxContainer"]
+
+[node name="Name" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "test"
+
+[node name="IP" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0.0.0.0"
+
+[node name="PlayerCount" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0"
+
+[node name="Join" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Join"

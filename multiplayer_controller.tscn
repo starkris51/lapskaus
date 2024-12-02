@@ -1,0 +1,98 @@
+[gd_scene load_steps=3 format=3 uid="uid://bs41dwj6yqsp7"]
+
+[ext_resource type="Script" uid="uid://cyhfhuq1lp3om" path="res://ServerBrowser.cs" id="1_1jf6k"]
+[ext_resource type="PackedScene" uid="uid://covgs3b4wcgco" path="res://server_info.tscn" id="1_ulert"]
+
+[node name="Multiplayer Controller" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_top = -15.5
+offset_bottom = 15.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ServerBrowser" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1jf6k")
+
+[node name="BroadcastTimer" type="Timer" parent="ServerBrowser"]
+
+[node name="ServerPanel" type="Panel" parent="ServerBrowser"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -192.0
+offset_top = -272.0
+offset_right = 192.0
+offset_bottom = 272.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BrowserContainer" type="VBoxContainer" parent="ServerBrowser/ServerPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 46.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ServerInfo" parent="ServerBrowser/ServerPanel/BrowserContainer" instance=ExtResource("1_ulert")]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="ServerBrowser/ServerPanel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -192.0
+offset_right = 192.0
+offset_bottom = 40.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="ServerBrowser/ServerPanel/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 5
+text = "Name"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IP" type="Label" parent="ServerBrowser/ServerPanel/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 5
+text = "IP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayerCount" type="Label" parent="ServerBrowser/ServerPanel/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 5
+text = "Player Count"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Join" type="Label" parent="ServerBrowser/ServerPanel/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 5
+text = "Da Join Buttøn"
+horizontal_alignment = 1
+vertical_alignment = 1
