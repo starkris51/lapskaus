@@ -1,19 +1,22 @@
 using Godot;
 using System;
+using System.Linq;
 using System.Text.Json;
 
 public partial class ServerBrowser : Control
 {
     [Export]
-    PacketPeerUdp broadcaster = new();
+    PacketPeerUdp broadcaster;
     [Export]
     PacketPeerUdp listener = new();
     [Export]
-    int listenPort = 8080;
+    int listenPort = 8911;
     [Export]
-    int hostPort = 8081;
+    int hostPort = 8912;
     [Export]
-    string broadcastAdress = "192.168.1.255";
+    string broadcastAdress = "localhost";
+    [Export]
+    PackedScene ServerInfo;
 
     Timer broadcastTimer;
 
@@ -28,19 +31,23 @@ public partial class ServerBrowser : Control
     private void SetUpListener()
     {
         var ok = listener.Bind(listenPort);
+        Label bound = GetNode<Label>("%Bound");
 
         if (ok == Error.Ok)
         {
             GD.Print("Bound to listen port" + listenPort.ToString());
+            bound.Text = "Bound to listen port" + listenPort.ToString();
         }
         else
         {
             GD.Print("Failed to bound listen port");
+            bound.Text = "Failed to bound listen port";
         }
     }
 
-    private void SetUpBroadcast(string name)
+    public void SetUpBroadcast(string name)
     {
+        broadcaster = new PacketPeerUdp();
         serverInfo = new ServerInfo()
         {
             Name = name,
@@ -59,7 +66,6 @@ public partial class ServerBrowser : Control
         {
             GD.Print("Failed to bound broadcast port");
         }
-
         broadcastTimer.Start();
     }
 
@@ -70,15 +76,40 @@ public partial class ServerBrowser : Control
             string serverIP = listener.GetPacketIP();
             int serverPort = listener.GetPacketPort();
             byte[] bytes = listener.GetPacket();
-            ServerInfo info = JsonSerializer.Deserialize<ServerInfo>(bytes.GetStringFromAscii());
-            GD.Print(serverIP, serverPort, info);
+            ServerInfo info = new();
+            try
+            {
+                info = JsonSerializer.Deserialize<ServerInfo>(bytes);
+                GD.Print($"Server Name: {info.Name}, ServerIP: {serverIP}");
+
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"Failed to deserialize JSON: {ex.Message}");
+            }
+
+            Node currentNode = GetNode<VBoxContainer>("%BrowserContainer").GetChildren().Where(x => x.Name == info.Name).FirstOrDefault();
+
+            if (currentNode != null)
+            {
+                currentNode.GetNode<Label>("PlayerCount").Text = info.PlayerCount.ToString();
+                currentNode.GetNode<Label>("IP").Text = serverIP;
+                return;
+            }
+
+            Control serverInfo = ServerInfo.Instantiate<Control>();
+            serverInfo.Name = info.Name;
+            serverInfo.GetNode<Label>("%Name").Text = info.Name;
+            serverInfo.GetNode<Label>("%IP").Text = serverIP;
+            serverInfo.GetNode<Label>("%PlayerCount").Text = info.PlayerCount.ToString();
+            GetNode("%BrowserContainer").AddChild(serverInfo);
         }
     }
 
     private void _on_broadcast_timer_timeout()
     {
         GD.Print("Broadcasting💀");
-        serverInfo.PlayerCount += 1; //insert player count from gameManager
+        serverInfo.PlayerCount = 1; //insert player count from gameManager
 
         string json = JsonSerializer.Serialize(serverInfo);
         var packet = json.ToAsciiBuffer();
@@ -86,4 +117,10 @@ public partial class ServerBrowser : Control
         broadcaster.PutPacket(packet);
     }
 
+    public void CleanUp()
+    {
+        listener.Close();
+        broadcastTimer.Stop();
+        broadcaster?.Close();
+    }
 }

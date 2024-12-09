@@ -4,17 +4,23 @@ using System;
 public partial class MultiplayerController : Control
 {
     [Export]
-    int port = 8079;
-
+    private int port = 8080;
 
     public override void _Ready()
     {
+        EventManager.HostButtonPressed += HostGame;
     }
 
-    private void HostGame()
+    public override void _ExitTree()
+    {
+        // Unsubscribe from the global event to avoid memory leaks
+        EventManager.HostButtonPressed -= HostGame;
+    }
+
+    private void HostGame(string serverName)
     {
         ENetMultiplayerPeer peer = new();
-        var error = peer.CreateServer(port, 24);
+        var error = peer.CreateServer(port, 2);
         if (error != Error.Ok)
         {
             GD.Print("could not host");
@@ -24,11 +30,14 @@ public partial class MultiplayerController : Control
         peer.Host.Compress(ENetConnection.CompressionMode.RangeCoder);
 
         Multiplayer.MultiplayerPeer = peer;
-
+        GD.Print("waiting for players");
+        GetNode<ServerBrowser>("ServerBrowser").SetUpBroadcast(serverName);
     }
 
-    private void _on_host_button_down()
+    private void JoinGame()
     {
+        ENetMultiplayerPeer peer = new();
 
     }
+
 }

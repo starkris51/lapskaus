@@ -3,21 +3,25 @@
 [node name="ServerInfo" type="HBoxContainer"]
 
 [node name="Name" type="Label" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "test"
 
 [node name="IP" type="Label" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "0.0.0.0"
 
 [node name="PlayerCount" type="Label" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "0"
 
 [node name="Join" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Join"
