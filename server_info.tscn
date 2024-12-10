@@ -1,6 +1,9 @@
-[gd_scene format=3 uid="uid://covgs3b4wcgco"]
+[gd_scene load_steps=2 format=3 uid="uid://covgs3b4wcgco"]
+
+[ext_resource type="Script" uid="uid://k64lep5kydya" path="res://ServerInfoLine.cs" id="1_e5yu4"]
 
 [node name="ServerInfo" type="HBoxContainer"]
+script = ExtResource("1_e5yu4")
 
 [node name="Name" type="Label" parent="."]
 unique_name_in_owner = true
