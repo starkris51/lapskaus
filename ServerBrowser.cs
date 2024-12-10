@@ -22,10 +22,15 @@ public partial class ServerBrowser : Control
 
     ServerInfo serverInfo;
 
+    MultiplayerManager multiplayerManager;
+
     public override void _Ready()
     {
         broadcastTimer = GetNode<Timer>("BroadcastTimer");
         SetUpListener();
+
+        multiplayerManager = GetNode<MultiplayerManager>("/root/MultiplayerManager");
+        multiplayerManager.Connect("ServerHosted", new Callable(this, nameof(OnServerHosted)));
     }
 
     private void SetUpListener()
@@ -69,6 +74,11 @@ public partial class ServerBrowser : Control
         broadcastTimer.Start();
     }
 
+    private void OnServerHosted(string serverName)
+    {
+        SetUpBroadcast(serverName);
+    }
+
     public override void _Process(double delta)
     {
         if (listener.GetAvailablePacketCount() > 0)
@@ -97,7 +107,7 @@ public partial class ServerBrowser : Control
                 return;
             }
 
-            Control serverInfo = ServerInfo.Instantiate<Control>();
+            ServerInfoLine serverInfo = ServerInfo.Instantiate<ServerInfoLine>();
             serverInfo.Name = info.Name;
             serverInfo.GetNode<Label>("%Name").Text = info.Name;
             serverInfo.GetNode<Label>("%IP").Text = serverIP;

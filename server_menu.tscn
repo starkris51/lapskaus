@@ -1,11 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://bs41dwj6yqsp7"]
+[gd_scene load_steps=4 format=3 uid="uid://bs41dwj6yqsp7"]
 
-[ext_resource type="Script" uid="uid://cyhfhuq1lp3om" path="res://ServerBrowser.cs" id="1_1jf6k"]
-[ext_resource type="Script" uid="uid://gjlqeb6k45gl" path="res://MultiplayerController.cs" id="1_ewyxk"]
-[ext_resource type="PackedScene" uid="uid://covgs3b4wcgco" path="res://server_info.tscn" id="1_ulert"]
-[ext_resource type="PackedScene" uid="uid://vy4v52d4x2hn" path="res://server_creator.tscn" id="4_7pdga"]
+[ext_resource type="Script" uid="uid://cyhfhuq1lp3om" path="res://ServerBrowser.cs" id="1_61axl"]
+[ext_resource type="PackedScene" uid="uid://covgs3b4wcgco" path="res://server_info.tscn" id="2_bmy3g"]
+[ext_resource type="PackedScene" uid="uid://vy4v52d4x2hn" path="res://server_creator.tscn" id="3_08cjd"]
 
-[node name="Multiplayer Controller" type="Control"]
+[node name="ServerMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,9 +12,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
-script = ExtResource("1_ewyxk")
 
 [node name="ServerBrowser" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -24,8 +23,8 @@ anchor_right = 0.5
 anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_1jf6k")
-ServerInfo = ExtResource("1_ulert")
+script = ExtResource("1_61axl")
+ServerInfo = ExtResource("2_bmy3g")
 
 [node name="BroadcastTimer" type="Timer" parent="ServerBrowser"]
 
@@ -96,7 +95,7 @@ text = "Da Join Buttøn"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ServerCreator" parent="." instance=ExtResource("4_7pdga")]
+[node name="ServerCreator" parent="." instance=ExtResource("3_08cjd")]
 layout_mode = 1
 offset_left = 226.0
 offset_top = 124.0

@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="lapskaus"
-run/main_scene="res://multiplayer_controller.tscn"
+run/main_scene="res://server_menu.tscn"
 config/features=PackedStringArray("4.4", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+MultiplayerManager="*res://MultiplayerManager.cs"
 
 [dotnet]
 
