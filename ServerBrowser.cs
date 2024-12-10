@@ -31,6 +31,7 @@ public partial class ServerBrowser : Control
 
         multiplayerManager = GetNode<MultiplayerManager>("/root/MultiplayerManager");
         multiplayerManager.Connect("ServerHosted", new Callable(this, nameof(OnServerHosted)));
+        multiplayerManager.Connect("ServerJoined", new Callable(this, nameof(OnServerJoined)));
     }
 
     private void SetUpListener()
@@ -56,7 +57,7 @@ public partial class ServerBrowser : Control
         serverInfo = new ServerInfo()
         {
             Name = name,
-            PlayerCount = 34 //insert player count from gameManager
+            PlayerCount = GameManager.Players.Count
         };
 
         broadcaster.SetBroadcastEnabled(true);
@@ -77,6 +78,12 @@ public partial class ServerBrowser : Control
     private void OnServerHosted(string serverName)
     {
         SetUpBroadcast(serverName);
+    }
+
+    private void OnServerJoined(string ip)
+    {
+        CleanUp();
+        GD.Print("Server joined", ip);
     }
 
     public override void _Process(double delta)
@@ -119,7 +126,7 @@ public partial class ServerBrowser : Control
     private void _on_broadcast_timer_timeout()
     {
         GD.Print("Broadcasting💀");
-        serverInfo.PlayerCount = 1; //insert player count from gameManager
+        serverInfo.PlayerCount = GameManager.Players.Count; //insert player count from gameManager
 
         string json = JsonSerializer.Serialize(serverInfo);
         var packet = json.ToAsciiBuffer();
