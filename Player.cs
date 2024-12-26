@@ -82,16 +82,16 @@ public partial class Player : CharacterBody3D
         Transform3D cameraTransform = _camera.Transform;
         cameraTransform.Origin = _initialCameraPosition + Headbob(Headbob_t);
 
-        float targetTilt = 0.0f;
-        if (Input.IsActionPressed("move_left")) targetTilt = TiltAmount;
-        else if (Input.IsActionPressed("move_right")) targetTilt = -TiltAmount;
+        // float targetTilt = 0.0f;
+        // if (Input.IsActionPressed("move_left")) targetTilt = TiltAmount;
+        // else if (Input.IsActionPressed("move_right")) targetTilt = -TiltAmount;
 
-        float currentTilt = cameraTransform.Basis.GetEuler().Z;
-        float newTilt = Mathf.Lerp(currentTilt, targetTilt, TiltSpeed * delta);
+        // float currentTilt = cameraTransform.Basis.GetEuler().Z;
+        // float newTilt = Mathf.Lerp(currentTilt, targetTilt, TiltSpeed * delta);
 
-        Vector3 cameraEuler = cameraTransform.Basis.GetEuler();
-        cameraEuler.Z = newTilt;
-        cameraTransform.Basis = Basis.Identity.Rotated(Vector3.Forward, newTilt);
+        // Vector3 cameraEuler = cameraTransform.Basis.GetEuler();
+        // cameraEuler.Z = newTilt;
+        // cameraTransform.Basis = Basis.Identity.Rotated(Vector3.Forward, newTilt);
 
         _camera.Transform = cameraTransform;
         MoveAndSlide();
