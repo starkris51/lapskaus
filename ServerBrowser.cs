@@ -57,7 +57,8 @@ public partial class ServerBrowser : Control
         serverInfo = new ServerInfo()
         {
             Name = name,
-            PlayerCount = GameManager.Players.Count
+            PlayerCount = GameManager.Players.Count,
+            IP = broadcastAdress + ':' + hostPort.ToString(),
         };
 
         broadcaster.SetBroadcastEnabled(true);
@@ -105,20 +106,16 @@ public partial class ServerBrowser : Control
                 GD.PrintErr($"Failed to deserialize JSON: {ex.Message}");
             }
 
-            Node currentNode = GetNode<VBoxContainer>("%BrowserContainer").GetChildren().Where(x => x.Name == info.Name).FirstOrDefault();
+            ServerInfoLine currentNode = (ServerInfoLine)GetNode<VBoxContainer>("%BrowserContainer").GetChildren().Where(x => x.Name == info.Name).FirstOrDefault();
 
             if (currentNode != null)
             {
-                currentNode.GetNode<Label>("PlayerCount").Text = info.PlayerCount.ToString();
-                currentNode.GetNode<Label>("IP").Text = serverIP;
+                currentNode.serverInfo = info;
                 return;
             }
 
             ServerInfoLine serverInfo = ServerInfo.Instantiate<ServerInfoLine>();
-            serverInfo.Name = info.Name;
-            serverInfo.GetNode<Label>("%Name").Text = info.Name;
-            serverInfo.GetNode<Label>("%IP").Text = serverIP;
-            serverInfo.GetNode<Label>("%PlayerCount").Text = info.PlayerCount.ToString();
+            serverInfo.serverInfo = info;
             GetNode("%BrowserContainer").AddChild(serverInfo);
         }
     }

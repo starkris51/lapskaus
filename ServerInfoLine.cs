@@ -4,23 +4,36 @@ using System.Net;
 
 public partial class ServerInfoLine : HBoxContainer
 {
+    public ServerInfo serverInfo;
+    private Button joinButton;
+    private Label ipLabel;
+    private Label playerCount;
     public override void _Ready()
     {
-        Button joinButton = GetNode<Button>("%Join");
+        joinButton = GetNode<Button>("%Join");
+
+        ipLabel = GetNode<Label>("%IP");
+
+        playerCount = GetNode<Label>("%PlayerCount");
+
 
         joinButton.Pressed += () =>
         {
-            string ipAddress = GetNode<Label>("%IP").Text;
-
-            if (IsValidIPAddress(ipAddress))
+            if (IsValidIPAddress(serverInfo.IP))
             {
-                EventManager.EmitJoinPressed(ipAddress);
+                EventManager.EmitJoinPressed(serverInfo.IP);
             }
             else
             {
-                GD.PrintErr("Invalid IP address: " + ipAddress);
+                GD.PrintErr("Invalid IP address: " + serverInfo.IP);
             }
         };
+    }
+
+    public override void _Process(double delta)
+    {
+        ipLabel.Text = serverInfo.IP;
+        playerCount.Text = serverInfo.PlayerCount.ToString();
     }
 
     private bool IsValidIPAddress(string ipAddress)

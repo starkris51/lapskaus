@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Linq;
+using System.Text.Json;
 
 public partial class MultiplayerManager : Node
 {
@@ -11,7 +12,6 @@ public partial class MultiplayerManager : Node
 
     [Signal]
     public delegate void ServerJoinedEventHandler(string ip);
-
 
     public override void _Ready()
     {
@@ -33,6 +33,7 @@ public partial class MultiplayerManager : Node
     private void HostGame(string serverName)
     {
         ENetMultiplayerPeer peer = new();
+        peer.SetBindIP("*");
         var error = peer.CreateServer(port, 2);
         if (error != Error.Ok)
         {
@@ -43,7 +44,15 @@ public partial class MultiplayerManager : Node
         peer.Host.Compress(ENetConnection.CompressionMode.RangeCoder);
 
         Multiplayer.MultiplayerPeer = peer;
-        EmitSignal(nameof(ServerHosted), serverName);
+
+        ServerInfo serverInfo = new ServerInfo()
+        {
+            Name = serverName,
+            PlayerCount = 1,
+            Map = "res://maps/test.tscn",
+        };
+
+        EmitSignal(nameof(ServerHosted), JsonSerializer.Serialize(serverInfo));
     }
 
     private void JoinGame(string ip)

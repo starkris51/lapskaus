@@ -1,18 +1,90 @@
-[gd_scene load_steps=4 format=3 uid="uid://do31en738xg1v"]
+[gd_scene load_steps=15 format=3 uid="uid://do31en738xg1v"]
 
 [ext_resource type="Script" uid="uid://071ak0cvpudt" path="res://Player.cs" id="1_4flbx"]
+[ext_resource type="Texture2D" uid="uid://dtljjkarn4nvc" path="res://Assets/gunIdle.png" id="2_onrkg"]
+[ext_resource type="Texture2D" uid="uid://crovmynlwpknd" path="res://Assets/ReloadAnimation/ReloadFrame1.png" id="3_nvl01"]
+[ext_resource type="Texture2D" uid="uid://dwb5gqtwp6bfh" path="res://Assets/ReloadAnimation/ReloadFrame2.png" id="4_ivps1"]
+[ext_resource type="Texture2D" uid="uid://pckhatlm52y5" path="res://Assets/ReloadAnimation/ReloadFrame3.png" id="5_urp6f"]
+[ext_resource type="Texture2D" uid="uid://h5swkw2da8m4" path="res://Assets/ReloadAnimation/ReloadFrame4.png" id="6_bwjto"]
+[ext_resource type="Texture2D" uid="uid://dme2tkrxnvwl1" path="res://Assets/ReloadAnimation/ReloadFrame5.png" id="7_606se"]
+[ext_resource type="Texture2D" uid="uid://djrokhgcvudsn" path="res://Assets/ReloadAnimation/ReloadFrame6.png" id="8_u1c27"]
+[ext_resource type="Texture2D" uid="uid://c0nmw8akn8b34" path="res://Assets/shotReloadFrame2.png" id="9_op7ga"]
+[ext_resource type="Texture2D" uid="uid://dngrt8lf4dr5q" path="res://Assets/gunShoot.png" id="10_q13i1"]
+[ext_resource type="Texture2D" uid="uid://c7u1rbbbpl58k" path="res://Assets/shotShootEmpty.png" id="11_pylmc"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_onrkg"]
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_4flbx"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_i3pqv"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_onrkg"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_onrkg"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_onrkg")
+}],
+"loop": false,
+"name": &"Idle",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_nvl01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_ivps1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_urp6f")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_bwjto")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_606se")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_u1c27")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_op7ga")
+}],
+"loop": false,
+"name": &"Reload",
+"speed": 3.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("10_q13i1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_pylmc")
+}],
+"loop": false,
+"name": &"Shoot",
+"speed": 24.0
+}]
 
 [node name="Player" type="CharacterBody3D"]
 transform = Transform3D(0.985336, 0, 0, 0, 0.985336, 0, 0, 0, 0.985336, 0, 0, 0)
 script = ExtResource("1_4flbx")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_onrkg")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.01488, 0)
+mesh = SubResource("CapsuleMesh_4flbx")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1.09477, 0, 0, 0, 1.09477, 0, 0, 0, 1.09477, 0, 0, 0)
-shape = SubResource("BoxShape3D_i3pqv")
+transform = Transform3D(1.09477, 0, 0, 0, 1.09477, 0, 0, 0, 1.09477, 0, 1.01488, 0)
+shape = SubResource("CapsuleShape3D_onrkg")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1.01488, 0, 0, 0, 1.01488, 0, 0, 0, 1.01488, 0, 1.55777, 0)
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Main" type="Node2D" parent="UI"]
+
+[node name="GunSprite" type="AnimatedSprite2D" parent="UI/Main"]
+position = Vector2(587.4, 334)
+scale = Vector2(0.61, 0.616667)
+sprite_frames = SubResource("SpriteFrames_onrkg")
+animation = &"Idle"
