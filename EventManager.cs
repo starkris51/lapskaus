@@ -6,7 +6,6 @@ public static class EventManager
     public static event Action<string> JoinButtonPressed;
     public static event Action<string> LoadMap;
 
-
     public static void EmitHostPressed(string serverName)
     {
         HostButtonPressed?.Invoke(serverName);

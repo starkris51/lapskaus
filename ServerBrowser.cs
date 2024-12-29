@@ -1,37 +1,21 @@
 using Godot;
 using System;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 
 public partial class ServerBrowser : Control
 {
     [Export]
-    PacketPeerUdp broadcaster;
-    [Export]
     PacketPeerUdp listener = new();
     [Export]
     int listenPort = 8911;
     [Export]
-    int hostPort = 8912;
-    [Export]
-    string broadcastAdress = "localhost";
-    [Export]
     PackedScene ServerInfo;
-
-    Timer broadcastTimer;
-
-    ServerInfo serverInfo;
-
-    MultiplayerManager multiplayerManager;
 
     public override void _Ready()
     {
-        broadcastTimer = GetNode<Timer>("BroadcastTimer");
         SetUpListener();
-
-        multiplayerManager = GetNode<MultiplayerManager>("/root/MultiplayerManager");
-        multiplayerManager.Connect("ServerHosted", new Callable(this, nameof(OnServerHosted)));
-        multiplayerManager.Connect("ServerJoined", new Callable(this, nameof(OnServerJoined)));
     }
 
     private void SetUpListener()
@@ -51,42 +35,6 @@ public partial class ServerBrowser : Control
         }
     }
 
-    public void SetUpBroadcast(string name)
-    {
-        broadcaster = new PacketPeerUdp();
-        serverInfo = new ServerInfo()
-        {
-            Name = name,
-            PlayerCount = GameManager.Players.Count,
-            IP = broadcastAdress + ':' + hostPort.ToString(),
-        };
-
-        broadcaster.SetBroadcastEnabled(true);
-        broadcaster.SetDestAddress(broadcastAdress, listenPort);
-
-        var ok = broadcaster.Bind(hostPort);
-        if (ok == Error.Ok)
-        {
-            GD.Print("Bound to broadcast port" + hostPort.ToString());
-        }
-        else
-        {
-            GD.Print("Failed to bound broadcast port");
-        }
-        broadcastTimer.Start();
-    }
-
-    private void OnServerHosted(string serverName)
-    {
-        SetUpBroadcast(serverName);
-    }
-
-    private void OnServerJoined(string ip)
-    {
-        CleanUp();
-        GD.Print("Server joined", ip);
-    }
-
     public override void _Process(double delta)
     {
         if (listener.GetAvailablePacketCount() > 0)
@@ -98,43 +46,29 @@ public partial class ServerBrowser : Control
             try
             {
                 info = JsonSerializer.Deserialize<ServerInfo>(bytes);
+                info.IP = serverIP;
                 GD.Print($"Server Name: {info.Name}, ServerIP: {serverIP}");
-
             }
             catch (Exception ex)
             {
                 GD.PrintErr($"Failed to deserialize JSON: {ex.Message}");
             }
 
-            ServerInfoLine currentNode = (ServerInfoLine)GetNode<VBoxContainer>("%BrowserContainer").GetChildren().Where(x => x.Name == info.Name).FirstOrDefault();
+            VBoxContainer browserContainer = GetNode<VBoxContainer>("%BrowserContainer");
+            ServerInfoLine currentNode = browserContainer.GetChildren()
+                .OfType<ServerInfoLine>()
+                .FirstOrDefault(x => x.serverInfo.IP == serverIP && x.serverInfo.Name == info.Name);
 
             if (currentNode != null)
             {
-                currentNode.serverInfo = info;
+                currentNode.serverInfo.Name = info.Name;
+                currentNode.serverInfo.PlayerCount = info.PlayerCount;
                 return;
             }
 
             ServerInfoLine serverInfo = ServerInfo.Instantiate<ServerInfoLine>();
             serverInfo.serverInfo = info;
-            GetNode("%BrowserContainer").AddChild(serverInfo);
+            browserContainer.AddChild(serverInfo);
         }
-    }
-
-    private void _on_broadcast_timer_timeout()
-    {
-        GD.Print("Broadcasting💀");
-        serverInfo.PlayerCount = GameManager.Players.Count; //insert player count from gameManager
-
-        string json = JsonSerializer.Serialize(serverInfo);
-        var packet = json.ToAsciiBuffer();
-
-        broadcaster.PutPacket(packet);
-    }
-
-    public void CleanUp()
-    {
-        listener.Close();
-        broadcastTimer.Stop();
-        broadcaster?.Close();
     }
 }

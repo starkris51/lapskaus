@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b18fm0qv1y21t"]
+
+[ext_resource type="Script" uid="uid://bmheb4ytotxes" path="res://BroadcastManager.cs" id="1_m8un1"]
+
+[node name="BroadcastManager" type="Node"]
+script = ExtResource("1_m8un1")

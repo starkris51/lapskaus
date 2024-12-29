@@ -8,14 +8,16 @@ public partial class ServerInfoLine : HBoxContainer
     private Button joinButton;
     private Label ipLabel;
     private Label playerCount;
+    private Label serverName;
     public override void _Ready()
     {
         joinButton = GetNode<Button>("%Join");
 
         ipLabel = GetNode<Label>("%IP");
 
-        playerCount = GetNode<Label>("%PlayerCount");
+        serverName = GetNode<Label>("%Name");
 
+        playerCount = GetNode<Label>("%PlayerCount");
 
         joinButton.Pressed += () =>
         {
@@ -33,6 +35,7 @@ public partial class ServerInfoLine : HBoxContainer
     public override void _Process(double delta)
     {
         ipLabel.Text = serverInfo.IP;
+        serverName.Text = serverInfo.Name;
         playerCount.Text = serverInfo.PlayerCount.ToString();
     }
 

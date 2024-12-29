@@ -1,6 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://d28qgcm8fk8a"]
-
-[ext_resource type="PackedScene" uid="uid://do31en738xg1v" path="res://player.tscn" id="1_1n0q0"]
+[gd_scene load_steps=5 format=3 uid="uid://d28qgcm8fk8a"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1n0q0"]
 albedo_color = Color(0, 0, 0, 1)
@@ -12,7 +10,8 @@ material = SubResource("StandardMaterial3D_1n0q0")
 
 [sub_resource type="Environment" id="Environment_1n0q0"]
 background_mode = 2
-background_energy_multiplier = 5.0
+background_energy_multiplier = 1.75
+sky_custom_fov = 30.3
 
 [node name="DmTest" type="Node3D"]
 
@@ -25,14 +24,6 @@ transform = Transform3D(0.995589, 0, 0, 0, 0.995589, 0, 0, 0, 0.995589, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MapModel/StaticBody3D"]
 shape = SubResource("BoxShape3D_1n0q0")
-
-[node name="Player" parent="." instance=ExtResource("1_1n0q0")]
-transform = Transform3D(0.985336, 0, 0, 0, 0.985336, 0, 0, 0, 0.985336, 1.14587, 0.130928, 4.47331)
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-light_energy = 6.172
-light_indirect_energy = 0.0
-light_angular_distance = 12.91
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1n0q0")

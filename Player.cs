@@ -10,40 +10,96 @@ public partial class Player : CharacterBody3D
     [Export] private float Gravity = 9f;
     [Export] private float Headbob_Freq = 2.0f;
     [Export] private float Headbob_Amp = 0.08f;
-
     [Export] private float TiltAmount = 0.05f;
     [Export] private float TiltSpeed = 10.0f;
 
     private float Headbob_t = 0.0f;
 
     private Vector2 _mouseDelta = Vector2.Zero;
-
     private Vector3 _velocity = Vector3.Zero;
     private Camera3D _camera;
+    private RayCast3D _rayCast;
+    private Node3D _laserOrigin;
     private Vector3 _initialCameraPosition;
+
+    MultiplayerSynchronizer _synchronizer;
+
+    public override void _EnterTree()
+    {
+        _synchronizer = GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer");
+        _synchronizer.SetMultiplayerAuthority(int.Parse(Name));
+        SetMultiplayerAuthority(int.Parse(Name));
+    }
 
     public override void _Ready()
     {
         _camera = GetNode<Camera3D>("Camera3D");
-        Input.MouseMode = Input.MouseModeEnum.Captured;
-        _initialCameraPosition = _camera.Transform.Origin;
+        _camera.SetMultiplayerAuthority(_synchronizer.GetMultiplayerAuthority());
+        _rayCast = GetNode<RayCast3D>("Camera3D/RayCast3D");
 
+        Input.MouseMode = Input.MouseModeEnum.Captured;
+        _camera.Current = true;
+        _initialCameraPosition = _camera.Transform.Origin;
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!_synchronizer.IsMultiplayerAuthority())
+        {
+            return;
+        }
+
+        if (Input.IsActionJustPressed("shoot"))
+        {
+            Shoot();
+            GD.Print("Shoot");
+        }
     }
 
     public override void _PhysicsProcess(double delta)
     {
+        if (!IsMultiplayerAuthority())
+        {
+            return;
+        }
         HandleMovement((float)delta);
     }
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (!IsMultiplayerAuthority())
+        {
+            return;
+        }
         if (@event is InputEventMouseMotion mouseEvent)
         {
             RotateY(-mouseEvent.Relative.X * MouseSensitivity);
             _camera.RotateX(-mouseEvent.Relative.Y * MouseSensitivity);
             Vector3 cameraRotation = _camera.Rotation;
-            cameraRotation.X = Mathf.Clamp(cameraRotation.X, Mathf.DegToRad(-40), Mathf.DegToRad(60));
+            cameraRotation.X = Mathf.Clamp(cameraRotation.X, Mathf.DegToRad(-90), Mathf.DegToRad(90));
             _camera.Rotation = cameraRotation;
+        }
+    }
+
+    private void Shoot()
+    {
+        if (_rayCast == null)
+            return;
+
+        Vector2 screenCenter = GetViewport().GetVisibleRect().Size / 2;
+        Vector3 rayOrigin = _camera.ProjectRayOrigin(screenCenter);
+        Vector3 rayDirection = _camera.ProjectRayNormal(screenCenter);
+
+        _rayCast.GlobalTransform = new Transform3D(_rayCast.GlobalTransform.Basis, rayOrigin);
+        _rayCast.TargetPosition = rayDirection * 1000;
+        _rayCast.ForceRaycastUpdate();
+
+        if (_rayCast.IsColliding())
+        {
+            Vector3 hitPosition = _rayCast.GetCollisionPoint();
+            Vector3 hitNormal = _rayCast.GetCollisionNormal();
+            Node collider = _rayCast.GetCollider() as Node;
+            GD.Print($"Hit {collider?.Name} at {hitPosition}");
         }
     }
 

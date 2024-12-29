@@ -26,8 +26,6 @@ grow_vertical = 2
 script = ExtResource("1_61axl")
 ServerInfo = ExtResource("2_bmy3g")
 
-[node name="BroadcastTimer" type="Timer" parent="ServerBrowser"]
-
 [node name="ServerPanel" type="Panel" parent="ServerBrowser"]
 layout_mode = 1
 anchors_preset = 8
@@ -109,5 +107,3 @@ offset_left = 793.0
 offset_top = 53.0
 offset_right = 833.0
 offset_bottom = 76.0
-
-[connection signal="timeout" from="ServerBrowser/BroadcastTimer" to="ServerBrowser" method="_on_broadcast_timer_timeout"]
