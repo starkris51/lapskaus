@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://d28qgcm8fk8a"]
+[gd_scene load_steps=9 format=3 uid="uid://d28qgcm8fk8a"]
 
 [ext_resource type="Script" uid="uid://cynhkhjma71a8" path="res://Map.cs" id="1_1n0q0"]
+[ext_resource type="Texture2D" uid="uid://c35g1uqguybp1" path="res://icon.svg" id="2_n3ql2"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1n0q0"]
 albedo_color = Color(0, 0, 0, 1)
@@ -10,10 +11,23 @@ material = SubResource("StandardMaterial3D_1n0q0")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1n0q0"]
 
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_l54n2"]
+panorama = ExtResource("2_n3ql2")
+filter = false
+energy_multiplier = 7.67
+
+[sub_resource type="Sky" id="Sky_h0fk5"]
+sky_material = SubResource("PanoramaSkyMaterial_l54n2")
+
 [sub_resource type="Environment" id="Environment_1n0q0"]
-background_mode = 2
-background_energy_multiplier = 1.75
-sky_custom_fov = 30.3
+background_mode = 1
+background_color = Color(1, 1, 1, 1)
+background_energy_multiplier = 0.6
+sky = SubResource("Sky_h0fk5")
+sky_custom_fov = 129.0
+ambient_light_source = 3
+ambient_light_color = Color(0.511589, 0.401298, 5.77569e-07, 1)
+glow_enabled = true
 
 [node name="DmTest" type="Node3D"]
 transform = Transform3D(1, 0.000663128, -0.000345926, -0.000662995, 1, 0.000377522, 0.000346181, -0.000377288, 1, 0, 0, 0)
@@ -31,3 +45,10 @@ shape = SubResource("BoxShape3D_1n0q0")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1n0q0")
+
+[node name="Players" type="Node3D" parent="."]
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("")
+spawn_path = NodePath("..")
+spawn_limit = 6

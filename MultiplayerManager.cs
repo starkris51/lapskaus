@@ -20,17 +20,20 @@ public partial class MultiplayerManager : Node
 
     private const string DEFAULT_MAP_PATH = "res://Maps/dm_test.tscn";
 
-    PackedScene PlayerScene = (PackedScene)ResourceLoader.Load("res://Player.tscn");
+    PackedScene PlayerScene;
 
     public override void _Ready()
     {
         EventManager.HostButtonPressed += HostGame;
         EventManager.JoinButtonPressed += JoinGame;
+        EventManager.StartButtonPressed += StartGame;
 
         Multiplayer.PeerConnected += OnPlayerConnected;
         Multiplayer.PeerDisconnected += OnPlayerDisconnected;
         Multiplayer.ConnectedToServer += ConnectedToServer;
         Multiplayer.ServerDisconnected += ServerDisconnected;
+
+        PlayerScene = (PackedScene)ResourceLoader.Load("res://player.tscn");
 
         broadcastManager = GetNode<BroadcastManager>("/root/BroadcastManager");
 
@@ -54,7 +57,6 @@ public partial class MultiplayerManager : Node
     {
         EventManager.HostButtonPressed -= HostGame;
         EventManager.JoinButtonPressed -= JoinGame;
-        EventManager.MapLoaded -= OnClientMapLoaded;
         isMapLoaded = false;
     }
     private void HostGame(string serverName)
@@ -73,9 +75,6 @@ public partial class MultiplayerManager : Node
         broadcastManager.SetUpBroadcast(serverName);
 
         sendPlayerData("Player", Multiplayer.MultiplayerPeer.GetUniqueId());
-
-        EventManager.MapLoaded += OnHostMapLoaded;
-        EventManager.EmitLoadMap(DEFAULT_MAP_PATH);
     }
     public async void JoinGame(string ip)
     {
@@ -156,70 +155,27 @@ public partial class MultiplayerManager : Node
             {
                 Rpc(nameof(sendPlayerData), item.Name, item.Id);
             }
-
-            if (id != Multiplayer.MultiplayerPeer.GetUniqueId())
-            {
-                RpcId(id, nameof(NotifyClientMapLoad));
-            }
-
-            Rpc(nameof(LoadExistingPlayers));
         }
     }
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-    private void LoadExistingPlayers()
+    public void StartGame()
     {
-        foreach (var player in GameManager.Players)
-        {
-            LoadSinglePlayer(player.Name, player.Id);
-        }
+        Rpc(nameof(LoadGame));
     }
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
-    private void LoadSinglePlayer(string playerName, long playerId)
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    public void LoadGame()
     {
-        var currentScene = GetTree().CurrentScene;
-        if (currentScene == null)
+        PackedScene mapScene = (PackedScene)ResourceLoader.Load(DEFAULT_MAP_PATH);
+        Node mapInstance = mapScene.Instantiate();
+
+        Node currentScene = GetTree().CurrentScene;
+        if (currentScene != null)
         {
-            return;
+            currentScene.QueueFree();
         }
 
-        if (currentScene.GetNodeOrNull(playerId.ToString()) != null)
-        {
-            return;
-        }
-
-        var playerInstance = PlayerScene.Instantiate();
-        playerInstance.Name = playerId.ToString();
-        playerInstance.SetMultiplayerAuthority((int)playerId);
-        currentScene.AddChild(playerInstance);
-    }
-
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
-    private void NotifyClientMapLoad()
-    {
-        if (isMapLoaded)
-        {
-            return;
-        }
-        EventManager.MapLoaded += OnClientMapLoaded;
-        EventManager.EmitLoadMap(DEFAULT_MAP_PATH);
-    }
-    private void OnHostMapLoaded()
-    {
-        EventManager.MapLoaded -= OnHostMapLoaded;
-        isMapLoaded = true;
-        LoadSinglePlayer("Host", Multiplayer.MultiplayerPeer.GetUniqueId());
-    }
-
-    private void OnClientMapLoaded()
-    {
-        EventManager.MapLoaded -= OnClientMapLoaded;
-        isMapLoaded = true;
-
-        foreach (var player in GameManager.Players)
-        {
-            LoadSinglePlayer(player.Name, player.Id);
-        }
+        GetTree().Root.AddChild(mapInstance);
+        GetTree().CurrentScene = mapInstance;
     }
 }

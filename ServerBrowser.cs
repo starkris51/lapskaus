@@ -42,6 +42,9 @@ public partial class ServerBrowser : Control
             string serverIP = listener.GetPacketIP();
             int serverPort = listener.GetPacketPort();
             byte[] bytes = listener.GetPacket();
+
+            if (serverIP == "") { return; }
+
             ServerInfo info = new();
             try
             {

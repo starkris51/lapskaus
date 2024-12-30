@@ -22,13 +22,17 @@ public partial class Player : CharacterBody3D
     private Node3D _laserOrigin;
     private Vector3 _initialCameraPosition;
 
-    MultiplayerSynchronizer _synchronizer;
+    MultiplayerSynchronizer multiplayerSynchronizer;
 
     public override void _Ready()
     {
         _camera = GetNode<Camera3D>("Camera3D");
         _rayCast = GetNode<RayCast3D>("Camera3D/RayCast3D");
-        _synchronizer = GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer");
+        multiplayerSynchronizer = GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer");
+        multiplayerSynchronizer.SetMultiplayerAuthority(int.Parse(Name));
+
+        SetPhysicsProcess(IsMultiplayerAuthority());
+        SetProcessInput(IsMultiplayerAuthority());
 
         if (IsMultiplayerAuthority())
         {
@@ -39,6 +43,7 @@ public partial class Player : CharacterBody3D
         else
         {
             _camera.Current = false;
+            _camera.QueueFree();
         }
     }
 
@@ -157,4 +162,5 @@ public partial class Player : CharacterBody3D
     {
         return new Vector3(Mathf.Sin(time * Headbob_Freq / 2) * Headbob_Amp, Mathf.Sin(time * Headbob_Freq) * Headbob_Amp, 0);
     }
+
 }
