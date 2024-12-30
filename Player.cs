@@ -24,27 +24,27 @@ public partial class Player : CharacterBody3D
 
     MultiplayerSynchronizer _synchronizer;
 
-    public override void _EnterTree()
-    {
-        _synchronizer = GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer");
-        _synchronizer.SetMultiplayerAuthority(int.Parse(Name));
-        SetMultiplayerAuthority(int.Parse(Name));
-    }
-
     public override void _Ready()
     {
         _camera = GetNode<Camera3D>("Camera3D");
-        _camera.SetMultiplayerAuthority(_synchronizer.GetMultiplayerAuthority());
         _rayCast = GetNode<RayCast3D>("Camera3D/RayCast3D");
+        _synchronizer = GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer");
 
-        Input.MouseMode = Input.MouseModeEnum.Captured;
-        _camera.Current = true;
-        _initialCameraPosition = _camera.Transform.Origin;
+        if (IsMultiplayerAuthority())
+        {
+            Input.MouseMode = Input.MouseModeEnum.Captured;
+            _camera.Current = true;
+            _initialCameraPosition = _camera.Transform.Origin;
+        }
+        else
+        {
+            _camera.Current = false;
+        }
     }
 
     public override void _Process(double delta)
     {
-        if (!_synchronizer.IsMultiplayerAuthority())
+        if (!IsMultiplayerAuthority())
         {
             return;
         }
