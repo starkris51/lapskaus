@@ -50,7 +50,7 @@ public partial class MultiplayerManager : Node
 
     private void ConnectedToServer()
     {
-        RpcId(1, nameof(sendPlayerData), "player", Multiplayer.MultiplayerPeer.GetUniqueId());
+        RpcId(1, nameof(sendPlayerData), Multiplayer.MultiplayerPeer.GetUniqueId().ToString(), Multiplayer.MultiplayerPeer.GetUniqueId());
     }
 
     public override void _ExitTree()
@@ -74,7 +74,9 @@ public partial class MultiplayerManager : Node
 
         broadcastManager.SetUpBroadcast(serverName);
 
-        sendPlayerData("Player", Multiplayer.MultiplayerPeer.GetUniqueId());
+        sendPlayerData("Host", Multiplayer.MultiplayerPeer.GetUniqueId());
+
+        EventManager.EmitLoadMap("res://server_lobby.tscn");
     }
     public async void JoinGame(string ip)
     {
@@ -108,6 +110,8 @@ public partial class MultiplayerManager : Node
             GD.Print("Failed to connect to server");
             return;
         }
+
+        EventManager.EmitLoadMap("res://server_lobby.tscn");
     }
     private void OnPlayerConnected(long id)
     {
@@ -160,7 +164,11 @@ public partial class MultiplayerManager : Node
 
     public void StartGame()
     {
-        Rpc(nameof(LoadGame));
+        if (Multiplayer.IsServer())
+        {
+            broadcastManager.CleanUp();
+            Rpc(nameof(LoadGame));
+        }
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]

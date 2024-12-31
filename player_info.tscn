@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dvdpf78x7mxft"]
+
+[node name="PlayerInfo" type="HBoxContainer"]
+
+[node name="Name" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Name"
+
+[node name="Kick" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Kick"

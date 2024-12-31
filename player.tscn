@@ -1,6 +1,7 @@
-[gd_scene load_steps=17 format=3 uid="uid://do31en738xg1v"]
+[gd_scene load_steps=23 format=3 uid="uid://do31en738xg1v"]
 
 [ext_resource type="Script" uid="uid://071ak0cvpudt" path="res://Player.cs" id="1_4flbx"]
+[ext_resource type="Texture2D" uid="uid://c35g1uqguybp1" path="res://icon.svg" id="2_606se"]
 [ext_resource type="Texture2D" uid="uid://dtljjkarn4nvc" path="res://Assets/gunIdle.png" id="2_onrkg"]
 [ext_resource type="Texture2D" uid="uid://crovmynlwpknd" path="res://Assets/ReloadAnimation/ReloadFrame1.png" id="3_nvl01"]
 [ext_resource type="Texture2D" uid="uid://dwb5gqtwp6bfh" path="res://Assets/ReloadAnimation/ReloadFrame2.png" id="4_ivps1"]
@@ -12,8 +13,22 @@
 [ext_resource type="Texture2D" uid="uid://dngrt8lf4dr5q" path="res://Assets/gunShoot.png" id="10_q13i1"]
 [ext_resource type="Texture2D" uid="uid://c7u1rbbbpl58k" path="res://Assets/shotShootEmpty.png" id="11_pylmc"]
 [ext_resource type="Texture2D" uid="uid://c6m5kw5ba7kxu" path="res://Assets/crosshair.png" id="12_ivps1"]
+[ext_resource type="AudioStream" uid="uid://cxbfhs0ony6vj" path="res://Assets/pistol_reload1.wav" id="13_bwjto"]
+[ext_resource type="AudioStream" uid="uid://bli0wvrfjmwo8" path="res://Assets/rocketfire1.wav" id="14_606se"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u1c27"]
+albedo_texture = ExtResource("2_606se")
+metallic = 0.81
+emission_enabled = true
+emission = Color(0.0430392, 0.0430392, 0.0430392, 1)
+emission_energy_multiplier = 1.16
+uv1_scale = Vector3(1.2, 1.2, 1.2)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 1.86607
+uv2_scale = Vector3(5, 5, 5)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_4flbx"]
+material = SubResource("StandardMaterial3D_u1c27")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_onrkg"]
 
@@ -23,7 +38,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("2_onrkg")
 }],
-"loop": false,
+"loop": true,
 "name": &"Idle",
 "speed": 1.0
 }, {
@@ -62,16 +77,31 @@ animations = [{
 }],
 "loop": false,
 "name": &"Shoot",
-"speed": 24.0
+"speed": 4.0
 }]
+
+[sub_resource type="SystemFont" id="SystemFont_bwjto"]
+font_names = PackedStringArray("Minecraft")
+
+[sub_resource type="LabelSettings" id="LabelSettings_606se"]
+font = SubResource("SystemFont_bwjto")
+font_size = 62
+outline_size = 3
+shadow_size = 10
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ivps1"]
 properties/0/path = NodePath(".:position")
-properties/0/spawn = false
+properties/0/spawn = true
 properties/0/replication_mode = 1
 properties/1/path = NodePath(".:rotation")
-properties/1/spawn = false
+properties/1/spawn = true
 properties/1/replication_mode = 1
+properties/2/path = NodePath("Camera3D:rotation")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath("Camera3D:position")
+properties/3/spawn = true
+properties/3/replication_mode = 1
 
 [node name="Player" type="CharacterBody3D"]
 transform = Transform3D(0.985336, 0, 0, 0, 0.985336, 0, 0, 0, 0.985336, 0, 0, 0)
@@ -90,10 +120,13 @@ transform = Transform3D(1.01488, 0, 0, 0, 1.01488, 0, 0, 0, 1.01488, 0, 1.55777,
 fov = 90.0
 
 [node name="GunSprite" type="AnimatedSprite2D" parent="Camera3D"]
+unique_name_in_owner = true
 position = Vector2(587.4, 334)
 scale = Vector2(0.61, 0.616667)
 sprite_frames = SubResource("SpriteFrames_onrkg")
-animation = &"Idle"
+animation = &"Shoot"
+frame = 1
+frame_progress = 1.0
 
 [node name="Crosshair" type="TextureRect" parent="Camera3D"]
 anchors_preset = 8
@@ -111,5 +144,31 @@ texture = ExtResource("12_ivps1")
 
 [node name="RayCast3D" type="RayCast3D" parent="Camera3D"]
 
+[node name="RayStart" type="Marker3D" parent="Camera3D"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32187, -0.244051, -1.00013)
+
+[node name="KillText" type="Label" parent="Camera3D"]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_right = 20.0
+offset_bottom = 23.0
+grow_horizontal = 2
+text = "You Are Kill Player"
+label_settings = SubResource("LabelSettings_606se")
+
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_ivps1")
+visibility_update_mode = 1
+
+[node name="ReloadSound" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("13_bwjto")
+pitch_scale = 0.4
+
+[node name="ShootSound" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("14_606se")

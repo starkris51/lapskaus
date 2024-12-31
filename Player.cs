@@ -24,13 +24,44 @@ public partial class Player : CharacterBody3D
 
     MultiplayerSynchronizer multiplayerSynchronizer;
 
+    [Export]
+    private float interpolationSpeed = 15.0f;
+
+    [Export]
+    private Vector3 syncPos = Vector3.Zero;
+
+    private PackedScene _bulletTrailScene;
+    private Marker3D _marker;
+    private const float TRAIL_LIFETIME = 0.1f;
+
+    private AnimatedSprite2D gunSprite;
+
+    private bool canShoot = true;
+
+    private AudioStreamPlayer _shootSound;
+    private AudioStreamPlayer _reloadSound;
+
+    private Label killText;
+
     public override void _Ready()
     {
         _camera = GetNode<Camera3D>("Camera3D");
         _rayCast = GetNode<RayCast3D>("Camera3D/RayCast3D");
+        _bulletTrailScene = ResourceLoader.Load<PackedScene>("res://ray_bullet.tscn");
+        _marker = GetNode<Marker3D>("%RayStart");
+        _shootSound = GetNode<AudioStreamPlayer>("%ShootSound");
+        _reloadSound = GetNode<AudioStreamPlayer>("%ReloadSound");
+        killText = GetNode<Label>("%KillText");
+        killText.Visible = false;
+        gunSprite = GetNode<AnimatedSprite2D>("%GunSprite");
         multiplayerSynchronizer = GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer");
         multiplayerSynchronizer.SetMultiplayerAuthority(int.Parse(Name));
 
+        AddToGroup("Players");
+
+        Multiplayer.ServerDisconnected += OnServerDisconnected;
+        gunSprite.AnimationFinished += OnGunAnimationFinished;
+        gunSprite.Play("Idle");
         SetPhysicsProcess(IsMultiplayerAuthority());
         SetProcessInput(IsMultiplayerAuthority());
 
@@ -43,8 +74,19 @@ public partial class Player : CharacterBody3D
         else
         {
             _camera.Current = false;
-            _camera.QueueFree();
+            gunSprite.Visible = false;
         }
+    }
+
+    private void OnServerDisconnected()
+    {
+        Input.MouseMode = Input.MouseModeEnum.Visible;
+        EventManager.EmitLoadMap("res://server_menu.tscn");
+    }
+
+    public override void _ExitTree()
+    {
+        Multiplayer.ServerDisconnected -= OnServerDisconnected;
     }
 
     public override void _Process(double delta)
@@ -54,20 +96,23 @@ public partial class Player : CharacterBody3D
             return;
         }
 
-        if (Input.IsActionJustPressed("shoot"))
+        if (Input.IsActionJustPressed("shoot") && canShoot)
         {
-            Shoot();
-            GD.Print("Shoot");
+            Rpc(nameof(Shoot));
         }
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        if (!IsMultiplayerAuthority())
+        if (IsMultiplayerAuthority())
         {
-            return;
+            HandleMovement((float)delta);
+            syncPos = GlobalPosition;
         }
-        HandleMovement((float)delta);
+        else
+        {
+            GlobalPosition = GlobalPosition.Lerp(syncPos, interpolationSpeed * (float)delta);
+        }
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -86,28 +131,114 @@ public partial class Player : CharacterBody3D
         }
     }
 
-    private void Shoot()
+
+    private void OnGunAnimationFinished()
     {
-        if (_rayCast == null)
-            return;
-
-        Vector2 screenCenter = GetViewport().GetVisibleRect().Size / 2;
-        Vector3 rayOrigin = _camera.ProjectRayOrigin(screenCenter);
-        Vector3 rayDirection = _camera.ProjectRayNormal(screenCenter);
-
-        _rayCast.GlobalTransform = new Transform3D(_rayCast.GlobalTransform.Basis, rayOrigin);
-        _rayCast.TargetPosition = rayDirection * 1000;
-        _rayCast.ForceRaycastUpdate();
-
-        if (_rayCast.IsColliding())
+        if (!IsMultiplayerAuthority())
         {
-            Vector3 hitPosition = _rayCast.GetCollisionPoint();
-            Vector3 hitNormal = _rayCast.GetCollisionNormal();
-            Node collider = _rayCast.GetCollider() as Node;
-            GD.Print($"Hit {collider?.Name} at {hitPosition}");
+            return;
+        }
+
+        switch (gunSprite.Animation)
+        {
+            case "Shoot":
+                gunSprite.Play("Reload");
+                _reloadSound.Play();
+                break;
+            case "Reload":
+                gunSprite.Play("Idle");
+                canShoot = true;
+                killText.Visible = false;
+                break;
         }
     }
 
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+    private void Shoot()
+    {
+        gunSprite.Play("Shoot");
+        if (IsMultiplayerAuthority())
+        {
+            _shootSound.Play();
+        }
+        canShoot = false;
+
+        Vector2 screenCenter = GetViewport().GetVisibleRect().Size / 2;
+        Vector3 rayOrigin = _camera.ProjectRayOrigin(screenCenter);
+        Vector3 rayDirection = _camera.ProjectRayNormal(screenCenter) * 1000;
+
+        PhysicsDirectSpaceState3D spaceState = GetWorld3D().DirectSpaceState;
+        PhysicsRayQueryParameters3D rayParams = new PhysicsRayQueryParameters3D
+        {
+            From = rayOrigin,
+            To = rayOrigin + rayDirection,
+            CollideWithBodies = true,
+            CollideWithAreas = true
+        };
+
+        var result = spaceState.IntersectRay(rayParams);
+
+        if (result.Count > 0)
+        {
+            var hitCollider = result["collider"].As<Node>();
+            if (hitCollider != null)
+            {
+                var hitNode = hitCollider;
+                while (hitNode != null && !hitNode.IsInGroup("Players"))
+                {
+                    hitNode = hitNode.GetParent();
+                }
+
+                if (hitNode != null && hitNode != this && IsMultiplayerAuthority())
+                {
+                    killText.Visible = true;
+                    killText.Text = "You are Killed the sigma named: " + GameManager.Players.Find(p => p.Id == int.Parse(hitNode.Name)).Name;
+                    hitNode.Rpc(nameof(ServerHandleHit), int.Parse(hitNode.Name));
+                }
+            }
+            CreateBulletTrail(_marker.GlobalPosition, rayOrigin + rayDirection);
+        }
+        else
+        {
+            CreateBulletTrail(_marker.GlobalPosition, rayOrigin + rayDirection);
+        }
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+    private void ServerHandleHit(int targetId)
+    {
+        if (!Multiplayer.IsServer())
+            return;
+
+        var targetNode = GetTree().CurrentScene.GetNode<Player>(targetId.ToString());
+        if (targetNode != null)
+        {
+            targetNode.Rpc(nameof(Die), targetId);
+        }
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true)]
+    private void Die(int id)
+    {
+        if (id == int.Parse(Name))
+        {
+            GlobalPosition = new Vector3(0, 5, 0);
+        }
+    }
+    private void CreateBulletTrail(Vector3 start, Vector3 end)
+    {
+        Node3D bulletTrail = _bulletTrailScene.Instantiate<Node3D>();
+        AddChild(bulletTrail);
+
+        bulletTrail.GlobalPosition = start;
+        float length = start.DistanceTo(end);
+        bulletTrail.LookAt(end);
+        bulletTrail.Rotate(Vector3.Right, Mathf.Pi / 2);
+        bulletTrail.Scale = new Vector3(0.02f, length / 2, 0.02f);
+
+        SceneTreeTimer timer = GetTree().CreateTimer(TRAIL_LIFETIME);
+        timer.Timeout += () => bulletTrail.QueueFree();
+    }
     private void HandleMovement(float delta)
     {
         Vector3 direction = Vector3.Zero;
@@ -142,6 +273,7 @@ public partial class Player : CharacterBody3D
         Headbob_t += delta * _velocity.Length() * (float)(IsOnFloor() ? 1.0f : 0.0f);
         Transform3D cameraTransform = _camera.Transform;
         cameraTransform.Origin = _initialCameraPosition + Headbob(Headbob_t);
+        _camera.Transform = cameraTransform;
 
         // float targetTilt = 0.0f;
         // if (Input.IsActionPressed("move_left")) targetTilt = TiltAmount;
@@ -154,7 +286,6 @@ public partial class Player : CharacterBody3D
         // cameraEuler.Z = newTilt;
         // cameraTransform.Basis = Basis.Identity.Rotated(Vector3.Forward, newTilt);
 
-        _camera.Transform = cameraTransform;
         MoveAndSlide();
     }
 

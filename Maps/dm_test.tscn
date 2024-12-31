@@ -1,7 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://d28qgcm8fk8a"]
+[gd_scene load_steps=7 format=3 uid="uid://d28qgcm8fk8a"]
 
 [ext_resource type="Script" uid="uid://cynhkhjma71a8" path="res://Map.cs" id="1_1n0q0"]
-[ext_resource type="Texture2D" uid="uid://c35g1uqguybp1" path="res://icon.svg" id="2_n3ql2"]
+[ext_resource type="PackedScene" uid="uid://crue2m3e21qyu" path="res://box.tscn" id="2_n3ql2"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1n0q0"]
 albedo_color = Color(0, 0, 0, 1)
@@ -11,30 +11,25 @@ material = SubResource("StandardMaterial3D_1n0q0")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1n0q0"]
 
-[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_l54n2"]
-panorama = ExtResource("2_n3ql2")
-filter = false
-energy_multiplier = 7.67
-
-[sub_resource type="Sky" id="Sky_h0fk5"]
-sky_material = SubResource("PanoramaSkyMaterial_l54n2")
-
 [sub_resource type="Environment" id="Environment_1n0q0"]
-background_mode = 1
-background_color = Color(1, 1, 1, 1)
-background_energy_multiplier = 0.6
-sky = SubResource("Sky_h0fk5")
-sky_custom_fov = 129.0
-ambient_light_source = 3
-ambient_light_color = Color(0.511589, 0.401298, 5.77569e-07, 1)
 glow_enabled = true
+glow_intensity = 0.95
+glow_bloom = 0.04
+glow_hdr_scale = 0.3
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.529622, 0.550815, 0.595027, 1)
+fog_light_energy = 1.15
+fog_density = 1.0
+fog_depth_curve = 0.757858
+adjustment_enabled = true
 
 [node name="DmTest" type="Node3D"]
 transform = Transform3D(1, 0.000663128, -0.000345926, -0.000662995, 1, 0.000377522, 0.000346181, -0.000377288, 1, 0, 0, 0)
 script = ExtResource("1_1n0q0")
 
 [node name="MapModel" type="MeshInstance3D" parent="."]
-transform = Transform3D(10.7002, 0, 0, 0, 0.263016, 0, 0, 0, 11.0916, 0, 0, 0)
+transform = Transform3D(18.0196, -1.57812e-11, -4.65661e-10, 8.16499e-10, 0.263064, 0, 1.86265e-09, -7.27596e-12, 19.032, 0, 0, 0)
 mesh = SubResource("BoxMesh_74maf")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="MapModel"]
@@ -46,9 +41,29 @@ shape = SubResource("BoxShape3D_1n0q0")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1n0q0")
 
-[node name="Players" type="Node3D" parent="."]
-
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
-_spawnable_scenes = PackedStringArray("")
 spawn_path = NodePath("..")
 spawn_limit = 6
+
+[node name="Box" parent="." instance=ExtResource("2_n3ql2")]
+transform = Transform3D(0.999999, -0.000662997, 0.000346176, 0.000663125, 0.999999, -0.000377292, -0.000345931, 0.000377517, 1, 5.88341, 0.630394, -1.57026)
+
+[node name="Box2" parent="." instance=ExtResource("2_n3ql2")]
+transform = Transform3D(2.9223, -0.00193748, 0.00101163, 0.00193785, 2.9223, -0.00110256, -0.00101091, 0.00110322, 2.9223, -4.42659, 1.60624, 6.92183)
+
+[node name="Box3" parent="." instance=ExtResource("2_n3ql2")]
+transform = Transform3D(2.78104, -0.000662997, 0.000366117, 0.00184418, 0.999999, -0.000399026, -0.000962046, 0.000377517, 1.0576, -6.92051, 0.630394, -7.29111)
+
+[node name="Box4" parent="." instance=ExtResource("2_n3ql2")]
+transform = Transform3D(3.61997, -0.00215649, -0.235671, 0.00206861, 3.25264, -0.000523137, 0.877848, 0.00122793, 0.971833, 0.623396, 1.76374, -6.38199)
+
+[node name="Box5" parent="." instance=ExtResource("2_n3ql2")]
+transform = Transform3D(12.8973, -0.0151101, -1.08215, 0.0137575, 10.5797, -0.00269749, 4.0309, 0.00329428, 0.737575, 3.23324, -1.19377, 17.1646)
+
+[node name="SpotLight3D" type="SpotLight3D" parent="."]
+transform = Transform3D(0.999999, 0.000317199, -0.00100906, 0.00100906, 4.00731e-07, 0.999999, 0.000317195, -1, 7.60192e-08, -0.00767078, 11.0481, -0.995829)
+light_energy = 12.852
+light_indirect_energy = 5.741
+light_volumetric_fog_energy = 2.63
+light_specular = 1.389
+spot_range = 17.781
